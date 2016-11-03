@@ -231,9 +231,20 @@ treeherder.provider('thEvents', function() {
 
             classificationVerified: "classification-verified-EVT",
 
-            saveAllAutoclassifications: "save-all-autoclassifications-EVT",
+            autoclassifySaveAll: "ac-save-all-EVT",
 
-            ignoreOthersAutoclassifications: "ignore-others-autoclassifications-EVT"
+            autoclassifySave: "ac-save-EVT",
+
+            autoclassifyIgnore: "ac-ignore-EVT",
+
+            autoclassifyOther: "ac-other-EVT",
+
+            autoclassifySelectOption: "ac-select-EVT",
+
+            autoclassifyChangeSelection: "ac-change-selection-EVT",
+
+            autoclassifyToggleExpandOptions: "ac-toggle-expand-options-EVT"
+
         };
     };
 });

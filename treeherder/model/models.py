@@ -670,6 +670,18 @@ class Job(models.Model):
     cross referencing data between the per-project databases and those
     objects in the Django ORM
     """
+    PENDING = 0
+    CROSSREFERENCED = 1
+    AUTOCLASSIFIED = 2
+    SKIPPED = 3
+    FAILED = 255
+
+    STATUSES = ((PENDING, 'pending'),
+                (CROSSREFERENCED, 'crossreferenced'),
+                (AUTOCLASSIFIED, 'autoclassified'),
+                (SKIPPED, 'skipped'),
+                (FAILED, 'failed'))
+
     id = BigAutoField(primary_key=True)
     repository = models.ForeignKey(Repository)
     guid = models.CharField(max_length=50, unique=True, db_index=True)
@@ -677,6 +689,7 @@ class Job(models.Model):
     # faster (since we'll need to cross-reference those row-by-row), see
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1265503
     project_specific_id = models.PositiveIntegerField(db_index=True)
+    autoclassify_status = models.IntegerField(choices=STATUSES, default=PENDING)
 
     # push is temporarily left null to allow us time to migrate old data
     push = models.ForeignKey(Push, null=True, default=None)

@@ -75,6 +75,11 @@ class JobsViewSet(viewsets.ViewSet):
             option_collection_map = self._get_option_collection_map()
             job["platform_option"] = option_collection_map[option_hash]
 
+        th_job = Job.objects.get(repository__name=project,
+                                 project_specific_id=pk)
+        status_map = {k: v for k, v in Job.STATUSES}
+        job["autoclassify_status"] = status_map[th_job.autoclassify_status]
+
         return Response(job)
 
     @with_jobs
@@ -287,7 +292,7 @@ class JobsViewSet(viewsets.ViewSet):
         try:
             job = Job.objects.get(repository__name=project,
                                   project_specific_id=pk)
-        except job.DoesNotExist:
+        except Job.DoesNotExist:
             return Response("No job with id: {0}".format(pk),
                             status=HTTP_404_NOT_FOUND)
         textlog_errors = (TextLogError.objects

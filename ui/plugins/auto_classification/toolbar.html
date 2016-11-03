@@ -1,0 +1,21 @@
+<div class="navbar-right">
+    <button class="btn btn-view-nav btn-sm nav-menu-btn"
+            title="Ignore"
+            ng-disabled="!$ctrl.selected.size"
+            ng-click="$ctrl.onIgnore()">Ignore</button>
+
+    <button class="btn btn-view-nav btn-sm nav-menu-btn"
+            title="{{ $ctrl.loggedIn ? (selected.length ? 'Save' : 'Nothing selected') : 'Not logged in' }}"
+            ng-disabled="!$ctrl.selected.size"
+            ng-click="$ctrl.onSave()">Save</button>
+
+    <button class="btn btn-view-nav btn-sm nav-menu-btn"
+            title="{{ $ctrl.loggedIn ? ($ctrl.canSaveAll ? 'Save All' : 'Lines not classified') : 'Not logged in' }}"
+            ng-disabled="!$ctrl.canSaveAll"
+            ng-click="$ctrl.onSaveAll()">Save All</button>
+
+    <div ng-if="status === 'ready'" ng-switch="autoclassifyStatus">
+      <span ng-switch-when="cross_referenced">Autoclassification pending</span>
+      <span ng-switch-when="failed">Autoclassification failed</span>
+    </div>
+</div>

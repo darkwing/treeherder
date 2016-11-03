@@ -1,0 +1,37 @@
+<span style="display:none"></span>
+<th-autoclassify-toolbar
+   class="th-context-navbar"
+   status="$ctrl.status"
+   autoclassifyStatus="$ctrl.autoclassifyStatus"
+   logged-in="loggedIn"
+   selected="$ctrl.selected"
+   can-save-all="canSaveAll()"
+   on-save-all="$ctrl.onSaveAll()"
+   on-save="$ctrl.onSave()"
+   on-ignore="$ctrl.onIgnore()"
+   ></th-autoclassify-toolbar>
+
+<div ng-switch="$ctrl.status">
+  <span ng-switch-when="pending">Logs not fully parsed, please wait</span>
+  <span ng-switch-when="failed">Log parsing failed</span>
+  <span ng-switch-when="no_logs">No errors logged</span>
+  <div ng-switch-when="loading" class="overlay">
+    <div>
+      <span class="fa fa-spinner fa-pulse th-spinner-lg"></span>
+    </div>
+  </div>
+  <span ng-switch-when="ready"></span>
+  <span ng-switch-when="error">Error showing autoclassification data</span>
+  <span ng-switch-default>Unexpected status {{ $ctrl.status }}</span>
+</div>
+
+
+<th-autoclassify-errors
+   status="$ctrl.status"
+   matchers="matchers"
+   lines="errorLines"
+   logged-in="loggedIn"
+   selected="$ctrl.selected"
+   on-update-line="$ctrl.onUpdateLine(lineId, type, classifiedFailureId, bugNumber, optionId)"
+   on-toggle-select="$ctrl.onToggleSelect(lineId, clear)"
+   ></th-autoclassify-errors>

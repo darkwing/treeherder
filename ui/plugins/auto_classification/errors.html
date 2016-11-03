@@ -1,0 +1,17 @@
+<span></span>
+<ul class="list-unstyled" ng-if="$ctrl.status == 'ready'">
+  <li ng-repeat="line in $ctrl.lines">
+    <th-error-line
+       ng-click="toggleSelect($event, line.id)"
+       ng-class="{selected: $ctrl.selected.has(line.id), ignored: line.state.ignore}"
+       matchers="$ctrl.matchers"
+       line="line"
+       logged-in="$ctrl.loggedIn"
+       selected="$ctrl.selected.has(line.id)"
+       on-change="$ctrl.onUpdateLine({lineId: lineId,
+                                      type: type,
+                                      classifiedclassifiedFailureId: classifiedFailureId,
+                                      bugNumber: bugNumber,
+                                      optionId: optionId})"
+       ></th-error-line>
+</ul>
