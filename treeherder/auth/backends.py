@@ -4,6 +4,7 @@ from hashlib import sha1
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from taskcluster.sync import Auth
 from taskcluster.utils import scope_match
 
@@ -41,26 +42,49 @@ class TaskclusterAuthBackend(object):
         """
         Get the user's email from the mozilla-user scope
 
-        If that scope is not present, then don't log the user in.  Cameron
-        and Dustin decided this should be a hard requirement.
-        See: https://docs.taskcluster.net/manual/3rdparty
         """
         email = self._get_scope_value(result, "assume:mozilla-user:")
 
-        # try finding the email in the clientId.  Doesn't give them permissions
-        # of any type, but can be used to find a matching user.
         if not email or email == "*":
-            match = re.search(r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)", result["clientId"])
+            # try finding the email in the clientId.  It can then be used to
+            # find a matching user.
+            match = re.search(
+                r"([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)",
+                result["clientId"])
             if match:
                 email = match.group(0)
             else:
                 # if we STILL don't have an email at this point, then just
-                # use a dummy email.  We don't use it for any authentication
-                # or to send anything to it, so it doesn't matter much, in
-                # reality.  But this should be very rare and won't happen
-                # for sheriffs ever.
-                email = "treeherderuser@treeherder.tree"
+                # use their clientId as a dummy email.  We don't
+                # send anything to it, so it doesn't matter much, in
+                # reality.  This can only happen if the user isn't using LDAP,
+                # and doesn't have an email in their clientId.
+                email = result["clientId"]
         return email
+
+    def _get_user(self, username, email):
+        """
+        Try to find an exising user that matches either the username
+        or email.  Prefer the username, since that's the unique key.  But
+        fallback to the email.
+        """
+
+        # may find a couple if there's two usernames with the same email
+        user = User.objects.filter(
+            Q(username=username) | Q(email=email))
+
+        # if we didn't find either, then raise an exception so we create a new
+        # user
+        if not len(user):
+            raise ObjectDoesNotExist
+
+        # prefer a matching username.  If no username match, return the first
+        # user in the list.
+        try:
+            return user.get(username=username)
+        except ObjectDoesNotExist:
+            return user.first()
+
 
     def authenticate(self, authorization=None, host=None, port=None):
         user = None
@@ -82,7 +106,9 @@ class TaskclusterAuthBackend(object):
                 email = self._get_email(result)
 
                 try:
-                    user = User.objects.get(username=username)
+                    # Either find the user by their username or email.
+                    user = self._get_user(username, email)
+
                 except ObjectDoesNotExist:
                     # the user doesn't already exist, create it.
                     logger.warning("Creating new user: {}".format(username))
